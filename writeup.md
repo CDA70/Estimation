@@ -3,6 +3,7 @@
  References: 
 * [UDACITY Flying Car Nanodegree lessons - Term 1](https://eu.udacity.com/course/flying-car-nanodegree--nd787)
 * [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
+* SLACK, Fying Cars: Peers information *
 
 Estimation, is the fourth project implemented during term 1 of the udacity's flying car nano degree. It's required to develop an estimator used by a quadrotor controller. The estimator is written in CPP that runs in a simulator.
 
@@ -76,11 +77,50 @@ Running the scenario 07_AttititudeEstimation results into:
 `PASS: ABS(Quad.Est.E.MaxEuler) was less than 0.100000 for at least 3.000000 seconds`
 
 
-
-
-## Implement all of the elements of the prediction step for the estimator.
+## PREDICTION STEP: Implement all of the elements of the prediction step for the estimator.
 *The prediction step should include the state update element (PredictState() function), a correct calculation of the Rgb prime matrix, and a proper update of the state covariance. The acceleration should be accounted for as a command in the calculation of gPrime. The covariance update should follow the classic EKF update equation.*
-==> Prediction step
+
+In this step we are supposed to run scenario 8 and scenarion 9. Scenario `08_PredictState` is using a perfect IMU and in scenario `09_PredictionCov` a realistic IMU is introduced. 
+
+The prediction function `QuadEstimatorEKF::PredictState` implements the gyro integration by *_Dead Reckoning_*, it's the process of calculating the current position by using the previously determined position.
+
+```C++
+    VectorXf predictedState = curState;
+    predictedState(0) = curState(0) + curState(3) * dt; //x = x + x_dot * dt
+    predictedState(1) = curState(1) + curState(4) * dt; //y = y + y_dot * dt
+    predictedState(2) = curState(2) + curState(5 )* dt; //z = z + z_dot * dot
+    
+    V3F acceleration  = attitude.Rotate_BtoI(accel);
+    predictedState(3) = curState(3) + acceleration.x * dt;
+    predictedState(4) = curState(4) + acceleration.y * dt;
+    predictedState(5) = curState(5) + acceleration.z * dt - CONST_GRAVITY * dt;
+```
+The second implemented function in this step is an update of the covariance matrix. The equation is provided is provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
+
+![covariance matrix](/images/covariance-matrix.png)
+
+```C++
+    RbgPrime(0,0) = (-cos(pitch) * sin(yaw));
+    RbgPrime(0,1) = (-sin(roll) * sin(pitch) * sin(yaw)) - (cos(roll) * cos(yaw));
+    RbgPrime(0,2) = (-cos(roll) * sin(pitch) * sin(yaw)) + (sin(roll) * cos(yaw));
+    
+    RbgPrime(1,0) = (cos(pitch) * cos(yaw));
+    RbgPrime(1,1) = (sin(roll) * sin(pitch) * cos(yaw)) - (cos(roll) * sin(yaw));
+    RbgPrime(1,2) = (cos(roll) * sin(pitch) * cos(yaw)) + (sin(roll) * sin(yaw));
+    
+    RbgPrime(2,0) = 0;
+    RbgPrime(2,1) = 0;
+    RbgPrime(2,2) = 0;
+```
+
+Result Predict state:
+
+![Predict State](/images/predictstate.gif)
+
+Result Predict Covariance
+
+![Predict covariance](/images/predictcovariance.gif)
+
 
 ## Implement the magnetometer update.
 *The update should properly include the magnetometer data into the state. Note that the solution should make sure to correctly measure the angle error between the current state and the magnetometer value (error should be the short way around, not the long way).*
