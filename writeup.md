@@ -143,6 +143,8 @@ Result Predict Covariance
 In this step the state is updated from the magnetometer measurements. 
 First we assign the yaw, which is the `ekfState(6)` to `zFromX(0)`
 
+The magnetometer as provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
+
 ![magnetometer equation](/images/magnetometer-equation.png)
 
 ```C++
@@ -166,12 +168,55 @@ PASS: ABS(Quad.Est.E.Yaw-0.000000) was less than Quad.Est.S.Yaw for 77% of the t
 ## CLOSED LOOP + GPS: Implement the GPS update.
 *The estimator should correctly incorporate the GPS information to update the current state estimate.*
 
+The last step (before we integrate our previous controller) is to implement a GPS update in the estimator. The GPS equation as provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/)
+
+![GPS Update equation](/images/gps-update-equations.png)
+
+![GPS Update result](/images/gpsupdate.gif)
+
+```
+Simulation #30 (../config/11_GPSUpdate.txt)
+PASS: ABS(Quad.Est.E.Pos) was less than 1.000000 for at least 20.000000 seconds
+```
+
 
 # Flight Evaluation
 ## Meet the performance criteria of each step.
 *For each step of the project, the final estimator should be able to successfully meet the performance criteria with the controller provided. The estimator's parameters should be properly adjusted to satisfy each of the performance criteria elements.*
 
+The result of each step is recorded and output (if any) is added into the steps above. All steps are running successful. 
 
-## De-tune your controller to successfully fly the final desired box trajectory with your estimator and realistic sensors.
+## ADDING YOUR CONTROLLER: De-tune your controller to successfully fly the final desired box trajectory with your estimator and realistic sensors.
 *The controller developed in the previous project should be de-tuned to successfully meet the performance criteria of the final scenario (<1m error for entire box flight).*
-==> Adding your controller
+
+The quadrotor crasht immediately after adding the controller and parameter. De-tuning isn't that trivial and took some time. Afterall it works but the result is still not satisfying. Unfortunately time is a rare thing and I have to move further.
+
+The parameters that worked for me are defined as:
+
+```
+# Position control gains
+kpPosXY = 15
+kpPosZ = 15
+KiPosZ = 25
+
+# Velocity control gains
+kpVelXY = 10
+kpVelZ = 9
+
+# Angle control gains
+kpBank = 7
+kpYaw = 2
+
+# Angle rate gains
+kpPQR =  95,95,5
+```
+
+I also ran the monto carlo and many quad test
+
+Montecarlo test
+
+![Montecarlo test](/images/montecarlotest.gif)
+
+Many Quad test
+
+![Many quad test](/images/testmanyquads.gif)
