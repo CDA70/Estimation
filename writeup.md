@@ -3,26 +3,26 @@
  References: 
 * [UDACITY Flying Car Nanodegree lessons - Term 1](https://eu.udacity.com/course/flying-car-nanodegree--nd787)
 * [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
-* SLACK, Fying Cars: Peers information *
+* SLACK, Fying Cars: Peers information 
 
-Estimation, is the fourth project implemented during term 1 of the udacity's flying car nano degree. It's required to develop an estimator used by a quadrotor controller. The estimator is written in CPP that runs in a simulator.
+Estimation, is the 4th project implemented during term 1 of the udacity's Flying Car Nano degree. It's required to develop an estimator used by a quadrotor controller. The estimator is written in CPP that runs in a simulator.
 
-Whereas in the controller project the sensors were perfect, in this project, noise is introduced to get closer to reality.
-A major part of the project is the implementation of an Extended Kalman Filter (EKF) that is used to improve the previous controller project. 
+Whereas in the previous controller (3th) project the sensors were perfect, in this project, noise is introduced to get closer to reality.
+Basically the project is the implementation of an Extended Kalman Filter (EKF) that is used to improve the previous controller project. 
 
 The project consists of six steps and are further explained in the rubrik answers below.
 The implemented steps are:
-* Sensor Noise
-* Attitude estimation
-* Prediction step
-* Magnetometer update
-* Closed loop + GPS update
-* Adding your controller
+* **Sensor Noise**
+* **Attitude estimation**
+* **Prediction step**
+* **Magnetometer update**
+* **Closed loop + GPS update**
+* **Adding your controller**
 
 ## SENSOR NOISE: Determine the standard deviation of the measurement noise of both GPS X data and Accelerometer X data.
 *The calculated standard deviation should correctly capture ~68% of the sensor measurements. Your writeup should describe the method used for determining the standard deviation given the simulated sensor measurements.*
 
-In step 1, Sensor Noise we are going to calculate the standard deviation. There is not much required for this step. the idea is to run the scenario `06_NoisySensors` for some time. The quad will not move but you will notice 2 graphs, the first one is to capture the GPS and the other one is the meassure the accelerometer. Once the data was captured I used `numpy.std()` function python to determine the standard deviation. 
+In step 1, Sensor Noise we are going to calculate the standard deviation. There is not much required for this step. the idea is to run the scenario `06_NoisySensors` for some time. The quad will not move but you will notice 2 graphs, the first one is to capture the GPS and the other one is the meassure the accelerometer. Once the data was captured I used `numpy.std()`  python function to determine the standard deviation. 
 
 ![standard deviation](/images/standard-deviation.png)
 
@@ -40,11 +40,11 @@ Running the scenario `06_NoisySensors` results in:
 ## ATTITUDE ESTIMATION: Implement a better rate gyro attitude integration scheme in the `UpdateFromIMU()` function.
 *The improved integration scheme should result in an attitude estimator of < 0.1 rad for each of the Euler angles for a duration of at least 3 seconds during the simulation. The integration scheme should use quaternions to improve performance over the current simple integration scheme.*
 
-In this case the **Attitude** estimation is achieved by obtaining the role and pitch angle from the gyro. The code provided `float pitchEst, rollEst`, the yaw on the otherhand is provided by the `ekfState(6)`, which is an EKF state `VectorXK` derived from the Eigen Class.
+In this case the **Attitude** estimation is achieved by obtaining the **Roll** and **Pitch** angle from the gyro. The code provided 2 floats `pitchEst` and `rollEst`, the yaw on the otherhand is provided by the `ekfState(6)`, which is an EKF state `VectorXK` derived from the Eigen Class.
 
 There are two ways to reduce the attitude errors, the first one is by implementing a rotation matrix and the other way can be achieved using a function `FromEuler123_RPY` implemented in the class `Quaternions<float>`.
 
-I tried both techniques but eventually choose to use the rotation matrix because I find the image and the complemtary code to implement the euler angles easier to understand.
+I tried both techniques but eventually I choose to use the rotation matrix because I find the image and the complemtary code to implement the euler angles easier to understand.
 
 ![euler angles](/images/euler-angles.png)
 
@@ -70,7 +70,7 @@ float predictedPitch = pitchEst + dtIMU * euler_dot.y;
 float predictedRoll = rollEst + dtIMU * euler_dot.x;
 ekfState(6) = ekfState(6) + dtIMU * euler_dot.z;  
 ```
-Running the scenario 07_AttititudeEstimation results into:
+Running the scenario `07_AttititudeEstimation` results into:
 
 ![attitude estimation](/images/attitude-estimation.gif)
 
@@ -80,10 +80,11 @@ Running the scenario 07_AttititudeEstimation results into:
 ## PREDICTION STEP: Implement all of the elements of the prediction step for the estimator.
 *The prediction step should include the state update element (PredictState() function), a correct calculation of the Rgb prime matrix, and a proper update of the state covariance. The acceleration should be accounted for as a command in the calculation of gPrime. The covariance update should follow the classic EKF update equation.*
 
-In this step we are supposed to run scenario 8 and scenario 9. 
+In this step we are running scenario 8 and scenario 9. 
+
 In Scenario `08_PredictState` we are provided a perfect IMU and in scenario `09_PredictionCov` a realistic IMU is introduced. 
 
-The prediction function `QuadEstimatorEKF::PredictState` implements the gyro integration by *_Dead Reckoning_*, it's the process of calculating the current position by using the previously determined position.
+The prediction function `QuadEstimatorEKF::PredictState` implements the gyro integration by *_Dead Reckoning_*, it calculates the current position by using the previously determined position.
 
 ```C++
     VectorXf predictedState = curState;
@@ -96,7 +97,7 @@ The prediction function `QuadEstimatorEKF::PredictState` implements the gyro int
     predictedState(4) = curState(4) + acceleration.y * dt;
     predictedState(5) = curState(5) + acceleration.z * dt - CONST_GRAVITY * dt;
 ```
-The second implemented function in this step is an update of the covariance matrix. The equation is provided is provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
+The second implemented function in this step is an update of the covariance matrix. The equation is provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
 
 ![covariance matrix](/images/covariance-matrix.png)
 
@@ -114,7 +115,8 @@ The second implemented function in this step is an update of the covariance matr
     RbgPrime(2,2) = 0;
 ```
 
-The function returns a `RbgPrime` 3X3 matrix that is used by the Jacobian Matrix
+The function returns a `RbgPrime` 3X3 matrix that is used by the Jacobian Matrix, which updates the EKF Covariance
+
 ![jacobian matrix](/images/jacobian-matrix.png)
 
 ```C++
@@ -140,7 +142,7 @@ Result Predict Covariance
 ## MAGNETOMETER UPDATE: Implement the magnetometer update.
 *The update should properly include the magnetometer data into the state. Note that the solution should make sure to correctly measure the angle error between the current state and the magnetometer value (error should be the short way around, not the long way).*
 
-In this step the state is updated from the magnetometer measurements. 
+The state is updated from the magnetometer measurements. 
 First we assign the yaw, which is the `ekfState(6)` to `zFromX(0)`
 
 The magnetometer as provided in the reference [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj#/54894644/) 
@@ -189,7 +191,7 @@ The result of each step is recorded and output (if any) is added into the steps 
 ## ADDING YOUR CONTROLLER: De-tune your controller to successfully fly the final desired box trajectory with your estimator and realistic sensors.
 *The controller developed in the previous project should be de-tuned to successfully meet the performance criteria of the final scenario (<1m error for entire box flight).*
 
-The quadrotor crasht immediately after adding the controller and parameter. De-tuning isn't that trivial and took some time. Afterall it works but the result is still not satisfying. Unfortunately time is a rare thing and I have to move further.
+The quadrotor crashed immediately after adding the controller and parameters from the previous project. De-tuning isn't that trivial and took some time. Afterall it works but the result is still not 100% satisfying. Unfortunately time is a rare thing and I have to move further.
 
 The parameters that worked for me are defined as:
 
