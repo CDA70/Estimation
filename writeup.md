@@ -140,8 +140,11 @@ Result Predict Covariance
 ## MAGNETOMETER UPDATE: Implement the magnetometer update.
 *The update should properly include the magnetometer data into the state. Note that the solution should make sure to correctly measure the angle error between the current state and the magnetometer value (error should be the short way around, not the long way).*
 
-In this step we update the state from the magnetometer measurements. 
+In this step the state is updated from the magnetometer measurements. 
 First we assign the yaw, which is the `ekfState(6)` to `zFromX(0)`
+
+![magnetometer equation](/images/magnetometer-equation.png)
+
 ```C++
     zFromX(0) = ekfState(6);
     float deltaYaw = z(0) - zFromX(0);
@@ -160,9 +163,9 @@ PASS: ABS(Quad.Est.E.Yaw) was less than 0.120000 for at least 10.000000 seconds
 PASS: ABS(Quad.Est.E.Yaw-0.000000) was less than Quad.Est.S.Yaw for 77% of the time
 ```
 
-## Implement the GPS update.
+## CLOSED LOOP + GPS: Implement the GPS update.
 *The estimator should correctly incorporate the GPS information to update the current state estimate.*
-==> Closed loop + GPS
+
 
 # Flight Evaluation
 ## Meet the performance criteria of each step.
