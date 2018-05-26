@@ -80,7 +80,8 @@ Running the scenario 07_AttititudeEstimation results into:
 ## PREDICTION STEP: Implement all of the elements of the prediction step for the estimator.
 *The prediction step should include the state update element (PredictState() function), a correct calculation of the Rgb prime matrix, and a proper update of the state covariance. The acceleration should be accounted for as a command in the calculation of gPrime. The covariance update should follow the classic EKF update equation.*
 
-In this step we are supposed to run scenario 8 and scenarion 9. Scenario `08_PredictState` is using a perfect IMU and in scenario `09_PredictionCov` a realistic IMU is introduced. 
+In this step we are supposed to run scenario 8 and scenario 9. 
+In Scenario `08_PredictState` we are provided a perfect IMU and in scenario `09_PredictionCov` a realistic IMU is introduced. 
 
 The prediction function `QuadEstimatorEKF::PredictState` implements the gyro integration by *_Dead Reckoning_*, it's the process of calculating the current position by using the previously determined position.
 
@@ -113,6 +114,20 @@ The second implemented function in this step is an update of the covariance matr
     RbgPrime(2,2) = 0;
 ```
 
+The function returns a RbgPrime that is used by the Jacobian Matrix
+![jacobian matrix](/images/jacobian-matrix.png)
+
+```C++
+    gPrime(0,3) = dt;
+    gPrime(1,4) = dt;
+    gPrime(2,5) = dt;
+    gPrime(3,6) = dt * (RbgPrime(0) * accel).sum();
+    gPrime(4,6) = dt * (RbgPrime(1) * accel).sum();
+    gPrime(5,6) = dt * (RbgPrime(2) * accel).sum();
+    
+    ekfCov = gPrime * ekfCov * gPrime.transpose() + Q;
+```
+
 Result Predict state:
 
 ![Predict State](/images/predictstate.gif)
@@ -122,9 +137,17 @@ Result Predict Covariance
 ![Predict covariance](/images/predictcovariance.gif)
 
 
-## Implement the magnetometer update.
+## MAGNETOMETER UPDATE: Implement the magnetometer update.
 *The update should properly include the magnetometer data into the state. Note that the solution should make sure to correctly measure the angle error between the current state and the magnetometer value (error should be the short way around, not the long way).*
-==> Magnetometer update
+
+```C++
+    float deltaYaw = z(0) - zFromX(0);
+    if (deltaYaw > F_PI) {
+        zFromX(0) += 2.f*F_PI;
+    }
+    else
+        zFromX(0) -= 2.f*F_PI;
+```
 
 ## Implement the GPS update.
 *The estimator should correctly incorporate the GPS information to update the current state estimate.*
