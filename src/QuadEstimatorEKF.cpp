@@ -188,6 +188,7 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
   Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+    //curState vector: x,y,z,dot_x,dot_y,dot_z
     VectorXf predictedState = curState;
     predictedState(0) = curState(0) + curState(3) * dt; //x = x + x_dot * dt
     predictedState(1) = curState(1) + curState(4) * dt; //y = y + y_dot * dt
@@ -347,7 +348,8 @@ void QuadEstimatorEKF::UpdateFromMag(float magYaw)
   //    (you don't want to update your yaw the long way around the circle)
   //  - The magnetomer measurement covariance is available in member variable R_Mag
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-    //zFromX(0) = ekfState(6);
+    // assign current estimated Yaw tp zFromX(0)
+    zFromX(0) = ekfState(6);
     float deltaYaw = z(0) - zFromX(0);
     if (deltaYaw > F_PI) {
         zFromX(0) += 2.f*F_PI;
@@ -355,14 +357,7 @@ void QuadEstimatorEKF::UpdateFromMag(float magYaw)
     else
         zFromX(0) -= 2.f*F_PI;
     
-    //hPrime(0,6) = 1;
     
-    //float diff = magYaw - zFromX(0);
-    //if ( diff > F_PI ) {
-    //    zFromX(0) += 2.f*F_PI;
-    //} else if ( diff < -F_PI ) {
-    //    zFromX(0) -= 2.f*F_PI;
-    //}
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   Update(z, hPrime, R_Mag, zFromX);
