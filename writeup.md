@@ -114,7 +114,7 @@ The second implemented function in this step is an update of the covariance matr
     RbgPrime(2,2) = 0;
 ```
 
-The function returns a RbgPrime that is used by the Jacobian Matrix
+The function returns a `RbgPrime` 3X3 matrix that is used by the Jacobian Matrix
 ![jacobian matrix](/images/jacobian-matrix.png)
 
 ```C++
@@ -140,13 +140,24 @@ Result Predict Covariance
 ## MAGNETOMETER UPDATE: Implement the magnetometer update.
 *The update should properly include the magnetometer data into the state. Note that the solution should make sure to correctly measure the angle error between the current state and the magnetometer value (error should be the short way around, not the long way).*
 
+In this step we update the state from the magnetometer measurements. 
+First we assign the yaw, which is the `ekfState(6)` to `zFromX(0)`
 ```C++
+    zFromX(0) = ekfState(6);
     float deltaYaw = z(0) - zFromX(0);
     if (deltaYaw > F_PI) {
         zFromX(0) += 2.f*F_PI;
     }
     else
         zFromX(0) -= 2.f*F_PI;
+```
+
+![mag update](/images/magupdate.gif)
+
+```
+Simulation #16 (../config/10_MagUpdate.txt)
+PASS: ABS(Quad.Est.E.Yaw) was less than 0.120000 for at least 10.000000 seconds
+PASS: ABS(Quad.Est.E.Yaw-0.000000) was less than Quad.Est.S.Yaw for 77% of the time
 ```
 
 ## Implement the GPS update.
